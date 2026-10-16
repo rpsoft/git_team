@@ -1,0 +1,22 @@
+# GPU variant of the Kokoro TTS service (NVIDIA). Enable it by adding to .env:
+#   COMPOSE_FILE=docker-compose.yml:docker-compose.gpu.yml
+#
+# The GPU is passed explicitly (device nodes + the host driver's CUDA libraries) instead of via
+# CDI names, because docker-compose talking to Podman 4.x can't pass CDI devices. The library
+# paths are the driver's stable SONAME links, so this keeps working across driver updates.
+# The image looks for driver libraries in /usr/local/nvidia/lib64 (its LD_LIBRARY_PATH).
+services:
+  tts:
+    image: ghcr.io/remsky/kokoro-fastapi-gpu:latest
+    devices:
+      - /dev/nvidia0
+      - /dev/nvidiactl
+      - /dev/nvidia-uvm
+      - /dev/nvidia-uvm-tools
+    volumes:
+      - /usr/lib/x86_64-linux-gnu/libcuda.so.1:/usr/local/nvidia/lib64/libcuda.so.1:ro
+      - /usr/lib/x86_64-linux-gnu/libcuda.so.1:/usr/local/nvidia/lib64/libcuda.so:ro
+      - /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1:/usr/local/nvidia/lib64/libnvidia-ml.so.1:ro
+      - /usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.1:/usr/local/nvidia/lib64/libnvidia-ptxjitcompiler.so.1:ro
+      - /usr/lib/x86_64-linux-gnu/libnvidia-nvvm.so.4:/usr/local/nvidia/lib64/libnvidia-nvvm.so.4:ro
+      - /usr/bin/nvidia-smi:/usr/local/nvidia/bin/nvidia-smi:ro

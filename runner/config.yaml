@@ -1,0 +1,32 @@
+# act_runner configuration (Gitea Actions). Docs: https://docs.gitea.com/usage/actions/act-runner
+log:
+  level: info
+
+runner:
+  file: /data/.runner        # registration state (persisted in the runnerdata volume)
+  capacity: 2                # concurrent jobs
+  timeout: 1h
+  fetch_timeout: 5s
+  fetch_interval: 2s
+  # `runs-on:` label -> container image used for the job
+  labels:
+    - "ubuntu-latest:docker://node:22-bookworm"
+    - "node-22:docker://node:22-bookworm"
+    - "node-20:docker://node:20-bookworm"
+
+cache:
+  enabled: true              # actions/cache and setup-node caching
+  dir: /data/cache
+
+container:
+  # Jobs share the host network so they can clone from Gitea's ROOT_URL (http://localhost:3000).
+  network: host
+  privileged: false
+  options:
+  workdir_parent:
+  valid_volumes: []
+  docker_host: "-"           # never expose the container socket to jobs
+  force_pull: false
+
+host:
+  workdir_parent:
